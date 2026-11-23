@@ -1,0 +1,19 @@
+name: Wrongly blocked site
+description: A safe site that VOOL's browser blocks by mistake.
+labels: ["list: remove"]
+body:
+  - type: input
+    id: host
+    attributes:
+      label: Host
+      description: The site name only, without http:// and without a path.
+      placeholder: example.org
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why it is safe
+      description: What the site is and who runs it. If you run it, say so.
+    validations:
+      required: true

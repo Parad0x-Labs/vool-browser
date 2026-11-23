@@ -1,0 +1,30 @@
+name: Report a harmful site
+description: A site that spreads malware, steals sign-ins or defrauds people, and is not blocked yet.
+labels: ["list: add"]
+body:
+  - type: input
+    id: host
+    attributes:
+      label: Host
+      description: The site name only, without http:// and without a path. Write the dots as [.] so nobody clicks it.
+      placeholder: fake-bank-login[.]net
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What it does
+      options:
+        - Steals sign-ins (phishing)
+        - Spreads malware
+        - Fraud or fake shop
+        - Other harm
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: How you know
+      description: A public report, a scan result or a screenshot. Do not paste stolen data, passwords or direct links to malware files.
+    validations:
+      required: true

@@ -1,0 +1,3 @@
+# VOOL block list: hosts added by the VOOL maintainers.
+# One host per line, lower case, sorted. Lines starting with # are notes.
+# A host here is blocked together with every name under it.

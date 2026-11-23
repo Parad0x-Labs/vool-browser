@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security weakness privately
+    url: https://github.com/Parad0x-Labs/vool-browser/security/advisories/new
+    about: A way to bypass the signature, the validator or the lists. Please do not open a public issue.
+  - name: A problem with the VOOL app itself
+    url: https://github.com/Parad0x-Labs/vool/issues
+    about: Bugs and requests for VOOL and its browser go to the main repository.

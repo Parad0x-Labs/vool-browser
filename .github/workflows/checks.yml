@@ -1,0 +1,55 @@
+name: Checks
+
+on:
+  push:
+    branches: [main, published]
+  pull_request:
+  workflow_dispatch:
+
+# Every step's exit code is the only status authority: no continue-on-error, no `|| true`.
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lists:
+    name: Lists, manifest and tools
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+      - name: Install pinned tools
+        run: python -m pip install --no-input -r requirements.txt
+      - name: No secrets, no personal paths
+        run: python tools/scan_repo.py
+      - name: Every list entry is valid
+        run: python tools/validate_lists.py
+      - name: Manifest matches the files
+        run: python tools/build_manifest.py --check
+      - name: Manifest verifies the way VOOL verifies it
+        run: python tools/verify_manifest.py
+      - name: Tool tests
+        run: python -m pytest tests -q
+
+  published-is-signed:
+    name: Published branch carries a valid signature
+    if: github.ref == 'refs/heads/published'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+      - run: python -m pip install --no-input -r requirements.txt
+      - run: python tools/verify_manifest.py --require-signature

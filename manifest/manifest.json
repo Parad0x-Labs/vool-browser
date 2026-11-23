@@ -1,0 +1,23 @@
+{
+  "files": [
+    {
+      "bytes": 190,
+      "entries": 0,
+      "path": "lists/vool-block.txt",
+      "sha256": "d3fee5e00d227687a4b2abef9d82d05147a65937951d25212fe4ff91202784f0"
+    },
+    {
+      "bytes": 59,
+      "path": "lists/sources.json",
+      "sha256": "b95342eb6dc0cfac0f3c25f6c8caa9c6608b140ae70e34b62c7796220ea989e6"
+    },
+    {
+      "bytes": 88,
+      "path": "plugins/index.json",
+      "sha256": "a4675c657374ef66e96bfbaddce83db4a35ea893f1ec0cba969747842f38ee9e"
+    }
+  ],
+  "generated": "2026-11-23T18:00:23Z",
+  "schema": "vool.browser.manifest.v1",
+  "serial": 1
+}
