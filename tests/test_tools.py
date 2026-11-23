@@ -147,6 +147,8 @@ def test_a_reviewed_pinned_plugin_passes(repo):
 @pytest.mark.parametrize("change", [
     {"package_sha256": "abc"}, {"package_sha256": "A" * 64}, {"package_url": "http://example.org/b.zip"},
     {"permissions": ["nativeMessaging"]}, {"permissions": ["declarativeNetRequest", "debugger"]},
+    {"permissions": ["proxy"]}, {"permissions": ["downloads"]}, {"permissions": ["contentSettings"]},
+    {"permissions": ["vpnProvider"]}, {"permissions": ["desktopCapture"]}, {"permissions": ["management"]},
     {"permissions": "all"}, {"version": "latest"}, {"reviewed_on": ""}, {"licence": ""}, {"install_script": "curl | sh"},
 ])
 def test_a_plugin_that_is_unpinned_overreaching_or_unreviewed_is_refused(repo, change):

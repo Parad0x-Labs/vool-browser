@@ -19,8 +19,17 @@ _ID = re.compile(r"^[a-z0-9][a-z0-9-]{1,62}$")
 _VERSION = re.compile(r"^\d+(\.\d+){1,3}$")
 
 SOURCE_FORMATS = ("hosts", "domains")
-#: Extension permissions a listed plugin may never ask for.
-FORBIDDEN_PERMISSIONS = frozenset({"nativeMessaging", "debugger", "proxy", "management", "privacy", "passwordsPrivate"})
+#: Extension permissions a listed plugin may never ask for. The same names VOOL itself refuses
+#: when a browser plugin is reviewed: programs outside the browser, the engine's control channel,
+#: the browser's connection, other plugins, privacy and per-site settings, saved sign-ins and
+#: certificates, the screen outside the browser, and saving files by itself.
+FORBIDDEN_PERMISSIONS = frozenset({
+    "nativeMessaging", "debugger", "proxy", "vpnProvider", "management", "privacy", "passwordsPrivate",
+    "contentSettings", "desktopCapture",
+    "webAuthenticationProxy", "certificateProvider", "platformKeys", "enterprise.platformKeys",
+    "enterprise.deviceAttributes", "enterprise.hardwarePlatform", "enterprise.networkingAttributes",
+    "downloads", "downloads.open", "downloads.shelf", "downloads.ui",
+})
 
 
 def _https(value: object) -> bool:
