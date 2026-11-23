@@ -11,13 +11,17 @@
 2. It checks the signature over the exact manifest bytes against the public key that shipped inside VOOL. The key in this repository is for people checking by hand; VOOL does not take its key from the network.
 3. It refuses a manifest whose `serial` is lower than the one it already holds. An old signed manifest cannot be replayed to bring back an old list.
 4. It downloads each listed file and checks its size and SHA-256.
-5. Only when every check passes does it swap the new lists in, all at once. On any failure it keeps the lists it has and tries again the next day.
+5. Only when every check passes does it swap the new lists in, all at once. A browser window that is open follows without a restart. On any failure it keeps the lists it has and tries again the next day; when the source could not be reached at all, it tries again within the hour.
+
+VOOL checks what it holds the same way every time it starts, so files changed on the computer afterwards are not used.
+
+A release may name files under `lists/` and `plugins/` only. One that names anything else is refused whole.
 
 `tools/verify_manifest.py --require-signature` runs steps 2 and 4 the same way, so anyone can check a release by hand.
 
 ## What an update can contain
 
-Block entries, the record of public sources, and the plugin index. Nothing else is read. An update cannot unblock a site, change a setting, or run code.
+Block entries, the record of public sources, and the plugin index. Nothing else is read. An update cannot unblock a site, change a setting, or run code. VOOL also keeps its own copy of the never-block list from `tools/common.py`: an entry for one of those hosts, or for a name above or below one, is left out even from a validly signed release.
 
 ## Privacy
 
