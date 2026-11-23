@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import common  # noqa: E402
+import common
 
 
 def _outside_repository(path: Path) -> bool:
@@ -47,10 +47,9 @@ def new_key(path: Path) -> int:
 
 
 def sign(path: Path) -> int:
+    import verify_manifest
     from cryptography.hazmat.primitives import serialization
     from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
-
-    import verify_manifest
 
     if not _outside_repository(path):
         print("REFUSED: keep the private key outside this repository")

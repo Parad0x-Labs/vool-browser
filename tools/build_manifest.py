@@ -13,11 +13,11 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import common  # noqa: E402
+import common
 
 
 def load(path: Path) -> dict | None:
@@ -64,12 +64,12 @@ def main(argv: list[str] | None = None) -> int:
     manifest = {
         "schema": common.MANIFEST_SCHEMA,
         "serial": serial,
-        "generated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "generated": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "files": files,
     }
     common.MANIFEST.parent.mkdir(parents=True, exist_ok=True)
     common.MANIFEST.write_bytes(common.canonical(manifest))
-    print(f"written: serial {serial}. The signature is now out of date; sign it (docs/SIGNING.md).")
+    print(f"written: serial {serial}. The signature is now out of date; the maintainer signs it before it is published.")
     return 0
 
 

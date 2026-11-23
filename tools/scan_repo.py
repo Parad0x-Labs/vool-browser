@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import re
 import subprocess
-import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -27,6 +26,25 @@ RULES: tuple[tuple[str, re.Pattern[str]], ...] = (
 )
 
 
+#: The only files that are not text: pictures for the README, in one folder, of a known
+#: kind and a modest size. Anything else that cannot be read as text is a finding.
+PICTURE_FOLDER = "docs/assets"
+PICTURE_KINDS = {".png": b"\x89PNG\r\n\x1a\n"}
+PICTURE_MOST_BYTES = 512 * 1024
+
+
+def is_allowed_picture(path: Path, root: Path) -> bool:
+    relative = path.relative_to(root).as_posix()
+    start = PICTURE_KINDS.get(path.suffix.lower())
+    if start is None or not relative.startswith(PICTURE_FOLDER + "/") or relative.count("/") != PICTURE_FOLDER.count("/") + 1:
+        return False
+    try:
+        raw = path.read_bytes()
+    except OSError:
+        return False
+    return raw.startswith(start) and len(raw) <= PICTURE_MOST_BYTES
+
+
 def tracked_files(root: Path) -> list[Path]:
     out = subprocess.run(["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
                          cwd=root, capture_output=True, check=True).stdout
@@ -39,6 +57,8 @@ def scan(paths: list[Path], root: Path) -> list[str]:
         try:
             text = path.read_text(encoding="utf-8")
         except (OSError, UnicodeDecodeError):
+            if is_allowed_picture(path, root):
+                continue
             findings.append(f"{path.relative_to(root).as_posix()}: not readable as text")
             continue
         for number, line in enumerate(text.splitlines(), 1):

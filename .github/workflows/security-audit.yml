@@ -1,0 +1,38 @@
+name: Security audit
+
+on:
+  push:
+    branches: [main, published]
+  pull_request:
+  schedule:
+    - cron: "0 8 * * 1"
+  workflow_dispatch:
+
+# The auditor's exit code is the only status authority: no continue-on-error, no `|| true`.
+# A crashed auditor fails the job, and so does any known weakness in a pinned tool.
+# Dependabot is the fix channel; this is the alarm for anything it missed.
+permissions:
+  contents: read
+
+concurrency:
+  group: security-audit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    name: Pinned tools have no known weakness
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+      - name: Install the auditor
+        run: python -m pip install --no-input -r requirements-audit.txt
+      - name: Audit the pinned tools
+        run: python -m pip_audit -r requirements.txt --strict
+      - name: Audit the auditor's own pin
+        run: python -m pip_audit -r requirements-audit.txt --strict

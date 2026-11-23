@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import common  # noqa: E402
+import common
 
 _DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 _SHA = re.compile(r"^[0-9a-f]{64}$")

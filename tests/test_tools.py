@@ -4,7 +4,6 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
-import shutil
 import sys
 from pathlib import Path
 
@@ -13,11 +12,12 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 
-import build_manifest  # noqa: E402
-import common  # noqa: E402
-import scan_repo  # noqa: E402
-import validate_lists  # noqa: E402
-import verify_manifest  # noqa: E402
+import build_manifest
+import check_docs
+import common
+import scan_repo
+import validate_lists
+import verify_manifest
 
 
 @pytest.fixture
@@ -298,3 +298,51 @@ def test_the_committed_repository_passes_its_own_checks():
     code, lines = verify_manifest.verify(ROOT, require_signature=False)
     assert code == 0, lines
     assert scan_repo.scan(scan_repo.tracked_files(ROOT), ROOT) == []
+
+
+def test_a_readme_picture_is_the_only_file_that_need_not_be_text(tmp_path):
+    png = b"\x89PNG\r\n\x1a\n" + bytes(64)
+    (tmp_path / "docs" / "assets" / "deep").mkdir(parents=True)
+    good = tmp_path / "docs" / "assets" / "banner.png"
+    good.write_bytes(png)
+    assert scan_repo.scan([good], tmp_path) == []
+    refused = {
+        "elsewhere.png": png,                                    # a picture outside the pictures folder
+        "docs/assets/deep/banner.png": png,                      # or in a folder under it
+        "docs/assets/program.png": b"MZ\x90\x00" + bytes(64),     # not a picture, whatever its name
+        "docs/assets/archive.zip": b"PK\x03\x04\xff\xfe",        # another kind of file
+        "docs/assets/huge.png": png + b"\xff" * scan_repo.PICTURE_MOST_BYTES,
+    }
+    for name, raw in refused.items():
+        path = tmp_path / name
+        path.write_bytes(raw)
+        assert scan_repo.scan([path], tmp_path) == [f"{name}: not readable as text"], name
+
+
+def test_a_link_that_leads_nowhere_is_found_and_good_ones_pass(tmp_path):
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs" / "RULES.md").write_text("# Rules\n\n## What gets listed\n\ntext\n")
+    (tmp_path / "pic.png").write_bytes(b"x")
+    page = tmp_path / "README.md"
+    page.write_text(
+        "# Start\n\n[rules](docs/RULES.md) [part](docs/RULES.md#what-gets-listed) [here](#start) [folder](docs)\n"
+        '<img src="pic.png" alt=""> [web](https://example.org/gone) [mail](mailto:nobody)\n'
+        "```\n[not a link](nowhere.md)\n```\n"
+    )
+    assert check_docs.problems(tmp_path) == []
+    page.write_text(
+        "# Start\n\n[gone](docs/SIGNING.md)\n[part](docs/RULES.md#no-such-part)\n[out](../outside.md)\n"
+        '<a href="missing.png">x</a>\n[here](#nowhere)\n'
+    )
+    assert check_docs.problems(tmp_path) == [
+        "README.md:3: docs/SIGNING.md leads nowhere",
+        "README.md:4: docs/RULES.md#no-such-part names a heading that is not there",
+        "README.md:5: ../outside.md leads nowhere",
+        "README.md:6: missing.png leads nowhere",
+        "README.md:7: #nowhere names a heading that is not there",
+    ]
+
+
+def test_every_link_in_the_committed_pages_leads_somewhere():
+    assert check_docs.problems(ROOT) == []
+
